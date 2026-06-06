@@ -1,0 +1,266 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. User Model
+model User {
+  id                      String                   @id @default(uuid())
+  email                   String                   @unique
+  passwordHash            String
+  isVerified              Boolean                  @default(false)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  
+  userRoles               UserRole[]
+  sessions                Session[]
+  refreshTokens           RefreshToken[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  profile                 Profile?
+  notifications           Notification[]
+  activityLogs            ActivityLog[]
+  auditLogs               AuditLog[]
+  fileUploads             FileUpload[]
+
+  @@index([email])
+}
+
+// 2. Role Model
+model Role {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  userRoles   UserRole[]
+}
+
+// 3. Permission Model
+model Permission {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 4. UserRole Junction Model
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+// 5. Session Model
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 6. RefreshToken Model
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  isRevoked Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 7. PasswordResetToken Model
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 8. EmailVerificationToken Model
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 9. Profile Model
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  name      String?
+  avatarUrl String?
+  phone     String?
+  company   String?
+  bio       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 10. ContactMessage Model
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  company   String?
+  subject   String?
+  message   String
+  status    String   @default("pending") // pending, reviewed, archived
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+// 11. Notification Model
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// 12. ActivityLog Model
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// 13. AuditLog Model
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  operator  String
+  action    String
+  ip        String?
+  timestamp DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([operator])
+}
+
+// 14. AdminSetting Model
+model AdminSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+// 15. SEOSetting Model
+model SEOSetting {
+  id                              String   @id @default(uuid())
+  siteName                        String   @default("Eurosia Defender X")
+  robotsTxt                       String
+  googleAnalyticsId               String?
+  googleSearchConsoleVerification String?
+  bingWebmasterVerification       String?
+  organizationSchemaJson          String?  @default("{}")
+  localBusinessSchemaJson         String?  @default("{}")
+  updatedAt                       DateTime @updatedAt
+}
+
+// 16. PageSEO Model
+model PageSEO {
+  id                 String   @id @default(uuid())
+  path               String   @unique
+  title              String
+  description        String
+  keywords           String[]
+  ogTitle            String?
+  ogDescription      String?
+  ogImage            String?
+  twitterCard        String   @default("summary_large_image")
+  canonicalUrl       String?
+  structuredDataJson String?  @default("{}")
+  updatedAt          DateTime @updatedAt
+
+  @@index([path])
+}
+
+// 17. Redirect Model
+model Redirect {
+  id         String   @id @default(uuid())
+  sourcePath String   @unique
+  targetPath String
+  statusCode Int      @default(301)
+  createdAt  DateTime @default(now())
+}
+
+// 18. SitemapUrl Model
+model SitemapUrl {
+  id         String   @id @default(uuid())
+  loc        String   @unique
+  lastmod    DateTime @default(now())
+  changefreq String   @default("weekly")
+  priority   Float    @default(0.8)
+  createdAt  DateTime @default(now())
+}
+
+// 19. FileUpload Model
+model FileUpload {
+  id        String   @id @default(uuid())
+  userId    String
+  fileName  String
+  fileType  String
+  fileSize  Int
+  fileUrl   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 20. SystemLog Model
+model SystemLog {
+  id        String   @id @default(uuid())
+  level     String   @default("info") // info, warning, error, critical
+  source    String
+  message   String
+  timestamp DateTime @default(now())
+
+  @@index([level])
+}

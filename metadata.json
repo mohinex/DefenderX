@@ -1,0 +1,8 @@
+{
+  "name": "Eurosia Defender X Web",
+  "description": "A high-fidelity next-generation cybersecurity platform featuring real-time SecOps alert monitoring, theme toggling, and simulated transceiver locking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

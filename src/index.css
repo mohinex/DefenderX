@@ -1,0 +1,275 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&family=Share+Tech+Mono&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Manrope', 'Inter', sans-serif;
+  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
+  
+  --color-blue-primary: #0057FF;
+  --color-navy: #0A1025;
+  --color-dark: #050816;
+  --color-gray-subtle: #B8C1D1;
+  --color-green-alert: #00C853;
+  --color-red-alert: #FF3B30;
+  --color-accent-blue: #4D8DFF;
+}
+
+/* Base resets & variables */
+:root {
+  --blue: #0057FF;
+  --navy: #0A1025;
+  --dark: #050816;
+  --white: #FFFFFF;
+  --gray: #B8C1D1;
+  --green: #00C853;
+  --red: #FF3B30;
+  --accent: #4D8DFF;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--dark);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--navy);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(77,141,255,0.4);
+  border-radius: 2px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes scan {
+  0% { top: 0; opacity: 1; }
+  95% { opacity: .2; }
+  100% { top: 100vh; opacity: 0; }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-7px); }
+  40%, 80% { transform: translateX(7px); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes drift1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(40px, 30px); }
+}
+@keyframes drift2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-30px, -20px); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-pulse-dot {
+  animation: pulse 2s infinite;
+}
+.animate-scan {
+  animation: scan 6s linear infinite;
+  pointer-events: none;
+}
+.animate-drift1 {
+  animation: drift1 12s ease-in-out infinite;
+}
+.animate-drift2 {
+  animation: drift2 15s ease-in-out infinite;
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+.animate-fade-up {
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.delay-100 { animation-delay: 0.1s; opacity: 0; }
+.delay-200 { animation-delay: 0.2s; opacity: 0; }
+.delay-300 { animation-delay: 0.3s; opacity: 0; }
+.delay-400 { animation-delay: 0.4s; opacity: 0; }
+.delay-500 { animation-delay: 0.5s; opacity: 0; }
+.delay-600 { animation-delay: 0.6s; opacity: 0; }
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  background: linear-gradient(90deg, var(--red), var(--blue));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity .2s, transform .1s;
+}
+.btn-primary:hover {
+  opacity: .88;
+}
+.btn-primary:active {
+  transform: scale(.98);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 26px;
+  background: transparent;
+  color: var(--white);
+  border: 1px solid rgba(77,141,255,0.4);
+  border-radius: 8px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s;
+}
+.btn-outline:hover {
+  background: rgba(77,141,255,0.1);
+  border-color: var(--accent);
+}
+
+.card {
+  background: rgba(10,16,37,0.7);
+  border: 1px solid rgba(77,141,255,0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  transition: border-color .25s, transform .25s;
+}
+.card:hover {
+  border-color: rgba(77,141,255,0.35);
+  transform: translateY(-3px);
+}
+
+.section {
+  padding: 80px 0;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(0,87,255,0.1);
+  border: 1px solid rgba(77,141,255,0.25);
+  border-radius: 20px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+
+.section-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+.section-sub {
+  font-size: 15px;
+  color: var(--gray);
+  line-height: 1.75;
+  max-width: 560px;
+}
+
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(5,8,22,0.98);
+  border-bottom: 1px solid rgba(77,141,255,0.2);
+  padding: 20px 24px;
+  gap: 16px;
+  backdrop-filter: blur(20px);
+}
+.mobile-menu.open {
+  display: flex;
+}
+
+@media(max-width:768px){
+  .section-title { font-size: 30px; }
+  .section { padding: 60px 0; }
+  .desktop-nav { display: none !important; }
+  .mobile-hamburger { display: flex !important; }
+}
+
+@layer utilities {
+  .clip-shield {
+    clip-path: polygon(50% 0%, 100% 15%, 100% 75%, 50% 100%, 0% 75%, 0% 15%);
+  }
+}
+
+/* Animations that are highly dynamic and eye-catching */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse-fast {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.95); }
+}
+
+.animate-pulse-fast {
+  animation: pulse-fast 1.5s infinite;
+}
+
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-radar-sweep {
+  animation: radar-sweep 6s linear infinite;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
