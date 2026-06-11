@@ -85,3 +85,91 @@ export const sanitizePayloadInput = (req: Request, res: Response, next: NextFunc
 
   next();
 };
+
+export const protectSourceCode = (req: Request, res: Response, next: NextFunction) => {
+  const urlPath = req.path.toLowerCase();
+  
+  // Define sensitive paths and extensions
+  const isSourcePath = urlPath.startsWith("/src/") || urlPath.startsWith("/server/") || urlPath.startsWith("/backend/") || urlPath.includes("/dist/server.cjs");
+  const isSensitiveExtension = urlPath.endsWith(".ts") || urlPath.endsWith(".tsx") || urlPath.endsWith(".jsx") || urlPath.endsWith(".json") || urlPath.endsWith(".env") || urlPath.endsWith(".env.example") || urlPath.endsWith(".map") || urlPath.endsWith(".prisma");
+
+  // Keep package.json, lockfiles, database configurations completely private
+  const isCriticalFile = urlPath.includes("package.json") || urlPath.includes("tsconfig.json") || urlPath.includes("db.json") || urlPath.includes(".env");
+
+  if (isSourcePath || isSensitiveExtension || isCriticalFile) {
+    // If we're in production, strictly forbid all source code paths
+    if (process.env.NODE_ENV === "production") {
+      console.warn(`[PERIMETER PREVENT] Blocked production exposure of source file: ${req.originalUrl}`);
+      res.status(403).json({
+        error: "ACCESS_DENIED",
+        message: "Perimeter policy violation: Access to raw source codes is strictly forbidden in production mode.",
+      });
+      return;
+    }
+
+    // In development mode, only allow legitimate Vite compiler requests
+    const secFetchDest = req.headers["sec-fetch-dest"] as string || "";
+    const acceptHeader = req.headers["accept"] as string || "";
+    
+    const isViteImport = req.query.import !== undefined || req.url.includes("?t=") || req.url.includes("v=");
+    
+    // Determine true client IP under proxy/containerized environments
+    const getRealClientIp = (r: Request): string => {
+      const forwarded = r.headers["x-forwarded-for"];
+      if (forwarded && typeof forwarded === "string") {
+        const parts = forwarded.split(",");
+        return parts[0].trim();
+      }
+      return r.ip || r.socket.remoteAddress || "127.0.0.1";
+    };
+
+    const realIp = getRealClientIp(req);
+    const isLocalhost = realIp === "127.0.0.1" || realIp === "::1" || realIp === "::ffff:127.0.0.1";
+
+    const referer = req.headers.referer || "";
+    const origin = req.headers.origin || "";
+    const host = req.headers.host || "";
+    const forwardedHost = (req.headers["x-forwarded-host"] as string) || "";
+
+    const hasValidReferer = referer !== "" && (
+      referer.includes("localhost") ||
+      referer.includes("127.0.0.1") ||
+      referer.includes(".run.app") ||
+      (host !== "" && referer.includes(host.split(":")[0])) ||
+      (forwardedHost !== "" && referer.includes(forwardedHost.split(":")[0]))
+    );
+
+    const hasValidOrigin = origin !== "" && (
+      origin.includes("localhost") ||
+      origin.includes("127.0.0.1") ||
+      origin.includes(".run.app") ||
+      (host !== "" && origin.includes(host.split(":")[0])) ||
+      (forwardedHost !== "" && origin.includes(forwardedHost.split(":")[0]))
+    );
+
+    const isNavigation = secFetchDest === "document";
+
+    if (isLocalhost) {
+      return next();
+    }
+
+    if (isViteImport) {
+      return next();
+    }
+
+    // Allow legitimate non-navigation requests from recognized origins
+    if (!isNavigation && (hasValidReferer || hasValidOrigin)) {
+      return next();
+    }
+
+    // Block any standard, direct browser or automated direct probe requests
+    console.warn(`[PERIMETER PREVENT] Blocked external direct fetch of development source file: ${req.originalUrl}`);
+    res.status(403).json({
+      error: "ACCESS_DENIED",
+      message: "Perimeter policy violation: Direct request to raw source files is prohibited.",
+    });
+    return;
+  }
+
+  next();
+};

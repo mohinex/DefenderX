@@ -126,9 +126,11 @@ export default function ToastContainer() {
   );
 }
 export function triggerSecOpsToast(text: string, type: "system" | "incoming" | "blocked" | "resolved" = "system") {
-  window.dispatchEvent(
-    new CustomEvent("secops-toast", {
-      detail: { text, type }
-    })
-  );
+  setTimeout(() => {
+    window.dispatchEvent(
+      new CustomEvent("secops-toast", {
+        detail: { text, type }
+      })
+    );
+  }, 0);
 }

@@ -3,7 +3,7 @@ import path from "path";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
 import mainRouter from "./server/routes/index";
-import { injectSecurityHeaders } from "./server/middlewares/securityMiddleware";
+import { injectSecurityHeaders, protectSourceCode } from "./server/middlewares/securityMiddleware";
 import { SeoController } from "./server/controllers/seoController";
 
 // Load Environment variables
@@ -18,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Inject HTTP header protection (Anti-Clickjacking, CSP, Frame defense)
 app.use(injectSecurityHeaders);
+app.use(protectSourceCode);
 
 // Root level crawler endpoints
 app.get("/sitemap.xml", SeoController.getSitemapXml);

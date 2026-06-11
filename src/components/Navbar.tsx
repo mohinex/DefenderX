@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Menu, X, Sun, Moon, Terminal, Facebook, Twitter, Linkedin } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 interface NavbarProps {
   isDark: boolean
@@ -19,31 +20,32 @@ export default function Navbar({
   onLaunchConsole,
   inConsoleMode,
   onExitConsole,
-  activeRoute = 'home',
+  activeRoute = '/',
   socialLinks,
   loggedInUser,
   onLogout,
 }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const navigate = useNavigate()
 
   const dynamicLinks = [
-    { label: 'Home', href: '#home' },
-    { label: 'Services', href: '#services' },
-    { label: 'About', href: '#about' },
-    { label: 'Why Us', href: '#why-us' },
-    { label: 'Contact', href: '#contact' },
+    { label: 'Home', href: '/' },
+    { label: 'Services', href: '/services' },
+    { label: 'About', href: '/about' },
+    { label: 'Why Us', href: '/why-us' },
+    { label: 'Contact', href: '/contact' },
   ];
 
   if (!loggedInUser) {
-    dynamicLinks.push({ label: 'Login', href: '#login' });
-    dynamicLinks.push({ label: 'Register', href: '#register' });
+    dynamicLinks.push({ label: 'Login', href: '/login' });
+    dynamicLinks.push({ label: 'Register', href: '/register' });
   } else {
-    dynamicLinks.push({ label: 'Dashboard', href: '#dashboard' });
-    dynamicLinks.push({ label: 'Profile', href: '#profile' });
-    dynamicLinks.push({ label: 'Admin', href: '#admin' });
-    dynamicLinks.push({ label: 'SEO Settings', href: '#seo-settings' });
-    dynamicLinks.push({ label: 'Logout', href: '#logout' });
+    dynamicLinks.push({ label: 'Dashboard', href: '/dashboard' });
+    dynamicLinks.push({ label: 'Profile', href: '/profile' });
+    dynamicLinks.push({ label: 'Admin', href: '/admin' });
+    dynamicLinks.push({ label: 'SEO Settings', href: '/seo-settings' });
+    dynamicLinks.push({ label: 'Logout', href: '/logout' });
   }
 
   useEffect(() => {
@@ -54,11 +56,36 @@ export default function Navbar({
 
   const handleNav = (href: string) => {
     setMenuOpen(false)
-    if (href === '#logout') {
+    if (href === '/logout') {
       if (onLogout) onLogout();
-      window.location.hash = '#home';
+      navigate('/');
     } else {
-      window.location.hash = href;
+      const currentPath = window.location.pathname;
+      if (currentPath === href && href !== '/') {
+        // Already on the same page: scroll smoothly directly
+        const sectionId = href.substring(1);
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const navbarHeight = 64;
+          const buffer = 20;
+          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+          const offsetPosition = elementPosition - (navbarHeight + buffer);
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      } else {
+        if (href === '/') {
+          navigate('/');
+        } else if (href.startsWith('/')) {
+          const sectionId = href.substring(1);
+          // Route and target the anchor section
+          navigate(`${href}#${sectionId}`);
+        } else {
+          navigate(href);
+        }
+      }
     }
   }
 
@@ -74,22 +101,23 @@ export default function Navbar({
           if (inConsoleMode && onExitConsole) {
             onExitConsole()
           } else {
-            handleNav('#home')
+            handleNav('/')
           }
         }}
+          className="group"
           style={{ display:'flex', alignItems:'center', gap:'10px', background:'none', border:'none', cursor:'pointer', textAlign: 'left' }}>
-          <svg width="36" height="36" viewBox="0 0 64 64" fill="none">
+          <svg width="36" height="36" viewBox="0 0 64 64" fill="none" className="transition-transform duration-300 group-hover:scale-105">
             <path d="M32 4L8 14v18c0 14 10.4 27.1 24 30 13.6-2.9 24-16 24-30V14L32 4z"
-              fill="rgba(255,59,48,0.15)" stroke="#FF3B30" strokeWidth="1.6"/>
+              fill="rgba(255,59,48,0.15)" stroke="#FF3B30" strokeWidth="1.6" className="transition-all duration-300 group-hover:fill-red-500/25"/>
             <text x="32" y="42" textAnchor="middle" fontFamily="Manrope,sans-serif"
               fontSize="22" fontWeight="900" fill="#FF3B30">X</text>
           </svg>
           <div>
-            <div style={{ fontFamily:'Manrope,sans-serif', fontSize:'14px', fontWeight:900,
+            <div className="transition-all duration-300 group-hover:text-red-500 group-hover:translate-x-0.5" style={{ fontFamily:'Manrope,sans-serif', fontSize:'14px', fontWeight:900,
               letterSpacing:'1.5px', color:'white', lineHeight:1 }}>
-              EUROSIA <span style={{ color:'#FF3B30' }}>X</span>
+              EUROSIA <span className="transition-all duration-300 group-hover:text-white" style={{ color:'#FF3B30' }}>X</span>
             </div>
-            <div style={{ fontFamily:'Share Tech Mono,monospace', fontSize:'9px',
+            <div className="transition-all duration-300 group-hover:text-white" style={{ fontFamily:'Share Tech Mono,monospace', fontSize:'9px',
               letterSpacing:'3px', color:'#4D8DFF', marginTop:'2px' }}>DEFENDER</div>
           </div>
         </button>
@@ -97,8 +125,7 @@ export default function Navbar({
         {/* Desktop Nav */}
         <div className="desktop-nav" style={{ display:'flex', alignItems:'center', gap:'32px' }}>
           {dynamicLinks.map(l => {
-            const cleanHref = l.href.replace('#', '');
-            const isActive = activeRoute === cleanHref;
+            const isActive = activeRoute === l.href;
             return (
               <button key={l.href} onClick={() => handleNav(l.href)}
                 style={{ background:'none', border:'none', cursor:'pointer',
@@ -246,7 +273,7 @@ export default function Navbar({
           {/* SECOPS Console Mode Trigger */}
           {inConsoleMode ? (
             <button
-               onClick={() => { window.location.hash = '#home'; }}
+               onClick={() => { handleNav('/'); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -271,7 +298,7 @@ export default function Navbar({
             </button>
           ) : (
             <button
-               onClick={() => { window.location.hash = '#console'; }}
+               onClick={() => { handleNav('/dashboard'); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -308,7 +335,7 @@ export default function Navbar({
             </svg>
             WhatsApp
           </a>
-          <button onClick={() => handleNav('#contact')}
+          <button onClick={() => handleNav('/contact')}
             style={{ padding:'8px 20px', background:'linear-gradient(90deg,#FF3B30,#0057FF)',
               color:'white', border:'none', borderRadius:'8px',
               fontFamily:'Manrope,sans-serif', fontSize:'12px', fontWeight:700,
@@ -330,8 +357,7 @@ export default function Navbar({
       {/* Mobile menu */}
       <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
         {dynamicLinks.map(l => {
-          const cleanHref = l.href.replace('#', '');
-          const isActive = activeRoute === cleanHref;
+          const isActive = activeRoute === l.href;
           return (
             <button key={l.href} onClick={() => handleNav(l.href)}
               style={{ background:'none', border:'none', cursor:'pointer',

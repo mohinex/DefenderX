@@ -1,5 +1,6 @@
 import React from 'react'
 import { Facebook, Twitter, Linkedin, Phone, Mail } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 interface FooterProps {
   isDark?: boolean
@@ -7,9 +8,26 @@ interface FooterProps {
 }
 
 export default function Footer({ isDark = true, socialLinks }: FooterProps) {
-  const scrollTo = (id: string) => {
-    document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const navigate = useNavigate()
+
+  const handleFooterNav = (route: string, anchor: string) => {
+    const currentPath = window.location.pathname;
+    if (currentPath === route) {
+      const element = document.getElementById(anchor.replace('#', ''));
+      if (element) {
+        const navbarHeight = 64;
+        const buffer = 20;
+        const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - (navbarHeight + buffer);
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    } else {
+      navigate(`${route}${anchor}`);
+    }
+  };
 
   const textColor = isDark ? '#B8C1D1' : '#4E5A70'
   const hoverColor = isDark ? 'white' : '#050816'
@@ -74,7 +92,7 @@ export default function Footer({ isDark = true, socialLinks }: FooterProps) {
             {['SOC Monitoring', 'VAPT / Pentest', 'Endpoint Security', 'Cloud Security',
               'Email Security', 'Incident Response', 'Compliance', 'Threat Intel'].map(s => (
               <div key={s} style={{ marginBottom: '9px' }}>
-                <button onClick={() => scrollTo('#services')}
+                <button onClick={() => handleFooterNav('/services', '#services')}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px',
                     color: textColor, transition: 'color .2s', padding: 0 }}
                   onMouseEnter={e => { e.currentTarget.style.color = hoverColor }}
@@ -87,9 +105,14 @@ export default function Footer({ isDark = true, socialLinks }: FooterProps) {
           <div>
             <div style={{ fontFamily: 'Manrope,sans-serif', fontSize: '12px', fontWeight: 700,
               letterSpacing: '2px', color: '#4D8DFF', marginBottom: '16px' }}>COMPANY</div>
-            {[['About', '#about'], ['Why Us', '#why-us'], ['7-Layer Defense', '#why-us'], ['Contact', '#contact']].map(([l, h]) => (
+            {[
+              ['About', '/about', '#about'],
+              ['Why Us', '/why-us', '#why-us'],
+              ['7-Layer Defense', '/why-us', '#why-us'],
+              ['Contact', '/contact', '#contact']
+            ].map(([l, r, h]) => (
               <div key={l} style={{ marginBottom: '9px' }}>
-                <button onClick={() => scrollTo(h)}
+                <button onClick={() => handleFooterNav(r, h)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px',
                     color: textColor, transition: 'color .2s', padding: 0 }}
                   onMouseEnter={e => { e.currentTarget.style.color = hoverColor }}
